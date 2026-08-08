@@ -26,8 +26,6 @@ class Strategy(ABC):
         It must not shift positions, calculate returns, model costs, or
         calculate performance metrics. The engine owns execution timing.
         """
-        target_position = pd.Series() # Initialize series 
-        target_position.index = data.index # Align dates 
-        target_position. 
+        raise NotImplementedError  
 
 
