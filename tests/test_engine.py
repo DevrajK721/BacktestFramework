@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd 
 import pytest
 
-from backtester.engine import run_backtest 
+from backtester.engine import run_backtest, run_buy_and_hold_backtest
 
 def close_data(closes: list[float]) -> pd.DataFrame:
     index = pd.date_range(
@@ -178,3 +178,24 @@ def test_equity_curve_compounds_net_returns() -> None:
         result["equity_curve"],
         [1.0, 1.1, 0.99],
     )
+
+
+def test_buy_and_hold_matches_asset_returns_without_costs() -> None:
+    data = close_data([100.0, 110.0, 99.0])
+
+    result = run_buy_and_hold_backtest(data)
+
+    np.testing.assert_allclose(result["target_position"], [1.0, 1.0, 1.0])
+    np.testing.assert_allclose(result["executed_position"], [0.0, 1.0, 1.0])
+    np.testing.assert_allclose(result["net_return"], [0.0, 0.1, -0.1])
+    np.testing.assert_allclose(result["equity_curve"], [1.0, 1.1, 0.99])
+
+
+def test_buy_and_hold_applies_entry_cost() -> None:
+    data = close_data([100.0, 110.0, 99.0])
+
+    result = run_buy_and_hold_backtest(data, cost_rate=0.001)
+
+    np.testing.assert_allclose(result["transaction_cost"], [0.0, 0.001, 0.0])
+    np.testing.assert_allclose(result["net_return"], [0.0, 0.099, -0.1])
+    np.testing.assert_allclose(result["equity_curve"], [1.0, 1.099, 0.9891])

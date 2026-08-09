@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "backtester"
-version = "0.1.0"
-description = "Backtesting framework for testing trading strategies"
+version = "0.2.0"
+description = "Learning-focused multi-asset portfolio backtesting framework"
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,8 +14,9 @@ authors = [
 ]
 dependencies = [
 	"numpy>=1.26",
-	"pandas>=2.2",
-	"matplotlib>=3.8",
+    "pandas>=2.2",
+    "matplotlib>=3.8",
+    "yfinance>=0.2.66",
 ]
 [project.optional-dependencies]
 dev = [
