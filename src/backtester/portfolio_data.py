@@ -70,6 +70,39 @@ def download_yfinance_ohlcv_many(
     return result
 
 
+def ensure_yfinance_ohlcv_csvs(
+    tickers: Iterable[str],
+    start: str,
+    end: str,
+    interval: str,
+    output_directory: str | Path,
+) -> dict[str, Path]:
+    """Return ticker CSV paths, downloading only assets that are missing.
+
+    Existing files are deliberately reused without a network request. Delete
+    or rename a CSV when a fresh download for a different date range or bar
+    interval is wanted.
+    """
+    ticker_list = list(tickers)
+    if not ticker_list:
+        raise ValueError("tickers must not be empty")
+    if len(set(ticker_list)) != len(ticker_list):
+        raise ValueError("tickers must be unique")
+
+    destination = Path(output_directory)
+    paths = {ticker: destination / f"{ticker}.csv" for ticker in ticker_list}
+    missing_tickers = [ticker for ticker, path in paths.items() if not path.is_file()]
+    if missing_tickers:
+        download_yfinance_ohlcv_many(
+            missing_tickers,
+            start=start,
+            end=end,
+            interval=interval,
+            output_directory=destination,
+        )
+    return paths
+
+
 def generate_signals(
     universe: Mapping[str, pd.DataFrame],
     strategy_factory: Callable[[str], Strategy],

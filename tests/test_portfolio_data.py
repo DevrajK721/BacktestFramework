@@ -3,6 +3,7 @@ import pandas as pd
 from backtester.portfolio_data import (
     close_price_panel,
     download_yfinance_ohlcv_many,
+    ensure_yfinance_ohlcv_csvs,
     load_ohlcv_universe,
 )
 
@@ -55,3 +56,31 @@ def test_download_many_writes_one_csv_per_ticker(monkeypatch, tmp_path) -> None:
     assert set(result) == {"AAA", "BBB"}
     assert (tmp_path / "AAA.csv").exists()
     assert (tmp_path / "BBB.csv").exists()
+
+
+def test_ensure_csvs_downloads_only_missing_tickers(monkeypatch, tmp_path) -> None:
+    existing = tmp_path / "AAA.csv"
+    existing.write_text("already downloaded", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    def fake_download_many(tickers, **kwargs) -> dict[str, pd.DataFrame]:
+        calls.append(list(tickers))
+        for ticker in tickers:
+            (tmp_path / f"{ticker}.csv").write_text("downloaded", encoding="utf-8")
+        return {}
+
+    monkeypatch.setattr(
+        "backtester.portfolio_data.download_yfinance_ohlcv_many",
+        fake_download_many,
+    )
+
+    paths = ensure_yfinance_ohlcv_csvs(
+        ["AAA", "BBB"],
+        start="2024-01-01",
+        end="2024-02-01",
+        interval="1d",
+        output_directory=tmp_path,
+    )
+
+    assert calls == [["BBB"]]
+    assert paths == {"AAA": existing, "BBB": tmp_path / "BBB.csv"}

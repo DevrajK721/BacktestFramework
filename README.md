@@ -43,9 +43,19 @@ assumptions are visible.
 ## Complete portfolio script
 
 Use [examples/portfolio_backtest.py](/Users/devrajkatkoria/Documents/BacktestFramework/examples/portfolio_backtest.py)
-as the starting point for a real run. It shows the full flow:
+for the built-in moving-average and inverse-volatility workflow. Its data
+helper downloads only a ticker CSV that is missing, so repeated runs reuse the
+existing data without making unnecessary Yahoo Finance requests. Delete a CSV
+when you deliberately want a fresh date range or interval.
 
-1. Download selected tickers once with download_yfinance_ohlcv_many.
+Use [examples/custom_backtest.py](/Users/devrajkatkoria/Documents/BacktestFramework/examples/custom_backtest.py)
+as the from-scratch template. It contains a custom ticker universe, signal
+class, portfolio-construction class, cost configuration, and report
+configuration with every value explicit.
+
+Both scripts follow this flow:
+
+1. Download only any missing ticker CSVs.
 2. Supply a mapping from ticker to its CSV path.
 3. Load the universe, retaining only timestamps shared by every asset.
 4. Generate a signal for each asset.
