@@ -1,0 +1,15 @@
+\contentsline {section}{Executive summary}{1}{Doc-Start}%
+\contentsline {section}{\numberline {1}Research question and hypotheses}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Primary question}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Hypotheses}{3}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Data}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Universe and source}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Data policy and limitations}{3}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Signal definition}{5}{section.3}%
+\contentsline {section}{\numberline {4}Portfolio construction and implementation}{5}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Equal-weight momentum baseline}{5}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Inverse-volatility comparison}{5}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Costs and benchmarks}{5}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Research design}{5}{section.5}%
+\contentsline {section}{\numberline {6}Results}{6}{section.6}%
+\contentsline {section}{\numberline {7}Interpretation, limitations, and conclusion}{6}{section.7}%

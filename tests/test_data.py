@@ -80,6 +80,17 @@ def test_high_below_close_raises_value_error() -> None:
     with pytest.raises(ValueError, match="high"):
         validate_ohlcv(data)
 
+
+def test_validation_allows_floating_point_ohlc_roundoff() -> None:
+    data = valid_ohlcv()
+    data.loc[0, "high"] = np.nextafter(data.loc[0, "close"], -np.inf)
+
+    result = validate_ohlcv(data)
+
+    assert result.loc[pd.Timestamp("2024-01-02"), "high"] < result.loc[
+        pd.Timestamp("2024-01-02"), "close"
+    ]
+
 def test_low_above_open_raises_value_error() -> None:
     data = valid_ohlcv()
     data.loc[0, "low"] = 101.0  # open is 100.0

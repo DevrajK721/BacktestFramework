@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd 
 import yfinance as yf
 
@@ -125,10 +126,16 @@ def validate_ohlcv(data : pd.DataFrame) -> pd.DataFrame:
     if (df["volume"] < 0).any():
         raise ValueError("volume must be non-negative")
 
-    if ((df["high"] < df["open"]) | (df["high"] < df["close"])).any():
+    if (
+        _materially_less(df["high"], df["open"])
+        | _materially_less(df["high"], df["close"])
+    ).any():
         raise ValueError("high must not be below open or close")
 
-    if ((df["low"] > df["open"]) | (df["low"] > df["close"])).any():
+    if (
+        _materially_less(df["open"], df["low"])
+        | _materially_less(df["close"], df["low"])
+    ).any():
         raise ValueError("low must not be above open or close")
 
     df = df.loc[:, list(REQ_COLS)]
@@ -136,3 +143,13 @@ def validate_ohlcv(data : pd.DataFrame) -> pd.DataFrame:
     df = df.set_index("date").sort_index()
     
     return df
+
+
+def _materially_less(left: pd.Series, right: pd.Series) -> pd.Series:
+    """Return values below a comparator by more than float round-off error.
+
+    Adjusted OHLC data can differ by a few floating-point units after a
+    corporate-action adjustment even where high/low ordering is economically
+    valid. Material ordering violations remain invalid.
+    """
+    return (left < right) & ~np.isclose(left, right, rtol=1e-12, atol=1e-12)

@@ -1,0 +1,10 @@
+{
+    "Source": "Yahoo Finance",
+    "Retrieval Date": "2026-08-10",
+    "Frequency": "Daily", 
+    "Requested Range": "2007-07-01 to 2026-07-01",
+    "Received Range": "2007-07-02 to 2026-07-01",
+    "Universe Tickers": ["SPY", "IEF", "TLT", "EFA", "EEM", "LQD", "GLD", "DBC", "UUP", "VNQ"],
+    "Adjustment Policy": "Adjusted Close",
+    "Alignment Policy": "Strict Common-Date Alignment"
+}

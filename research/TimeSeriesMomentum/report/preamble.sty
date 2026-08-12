@@ -1,0 +1,107 @@
+\ProvidesPackage{preamble}[2026/08/10 Time-Series Momentum research report style]
+
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{lmodern}
+\RequirePackage[margin=1in,headheight=22pt]{geometry}
+\RequirePackage{microtype}
+\RequirePackage{graphicx}
+\RequirePackage{svg}
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+\RequirePackage{array}
+\RequirePackage{longtable}
+\RequirePackage{siunitx}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage[table]{xcolor}
+\RequirePackage{caption}
+\RequirePackage{enumitem}
+\RequirePackage{titlesec}
+\RequirePackage{fancyhdr}
+\RequirePackage{floatpag}
+\RequirePackage{placeins}
+\RequirePackage{lastpage}
+\RequirePackage{hyperref}
+
+\svgsetup{inkscapeexe=/opt/homebrew/bin/inkscape,inkscapeversion=1}
+
+\definecolor{ReportNavy}{HTML}{111111}
+\definecolor{ReportTeal}{HTML}{111111}
+\definecolor{ReportInk}{HTML}{222222}
+\definecolor{ReportSlate}{HTML}{555555}
+\definecolor{ReportMist}{HTML}{F2F2F2}
+\definecolor{ReportRule}{HTML}{B7B7B7}
+
+\hypersetup{
+  hidelinks,
+  pdftitle={Multi-Asset Time-Series Momentum with Risk-Aware Portfolio Construction},
+  pdfauthor={Devraj Katkoria},
+  pdfsubject={Quantitative research report}
+}
+
+\sisetup{group-separator={,}, group-minimum-digits=4, detect-all}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\setlist[itemize]{leftmargin=1.25em, itemsep=0.2em, topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.45em, itemsep=0.2em, topsep=0.25em}
+\renewcommand{\arraystretch}{1.18}
+\setlength{\tabcolsep}{6pt}
+
+\titleformat{\section}{\Large\bfseries\color{ReportNavy}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{ReportNavy}}{\thesubsection}{0.65em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{ReportInk}}{\thesubsubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.55em}{0.55em}
+\titlespacing*{\subsection}{0pt}{1.1em}{0.35em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\color{ReportSlate}Quantitative Research}
+\rhead{\small\color{ReportSlate}Time-Series Momentum}
+\cfoot{\small\color{ReportSlate}\thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.35pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{ReportRule}\leaders\hrule height \headrulewidth\hfill}}
+\floatpagestyle{fancy}
+
+\newcommand{\reporttitle}[2]{%
+  {\color{ReportNavy}\rule{\linewidth}{1.3pt}}\par\vspace{1.1em}
+  {\fontsize{24}{29}\selectfont\bfseries\color{ReportNavy}#1\par}
+  \vspace{0.35em}
+  {\large\color{ReportSlate}#2\par}
+  \vspace{1.3em}
+  \begin{tabularx}{\linewidth}{@{}Xr@{}}
+    \textcolor{ReportInk}{\textbf{Research report}} & \textcolor{ReportSlate}{\today}\\
+    \textcolor{ReportSlate}{Daily ETF proxies | 2007-07-02 to 2026-07-01} & \textcolor{ReportSlate}{Devraj Katkoria}
+  \end{tabularx}
+  \vspace{1.1em}\color{ReportRule}\rule{\linewidth}{0.5pt}\color{black}
+}
+
+\newcommand{\keyfinding}[1]{%
+  \vspace{0.5em}
+  \noindent\colorbox{ReportMist}{\parbox{0.955\linewidth}{\vspace{0.65em}\textbf{\color{ReportNavy}Research status}\quad #1\vspace{0.65em}}}
+  \vspace{0.5em}
+}
+
+\newcommand{\reportfigure}[3]{%
+  \IfFileExists{#1}{%
+    \begin{figure}[htbp]
+      \centering
+      \includesvg[width=0.94\linewidth]{#1}
+      \caption{#2}
+      \label{#3}
+    \end{figure}
+  }{}%
+}
+
+\newcommand{\reportfigurecompact}[3]{%
+  \IfFileExists{#1}{%
+    \begin{figure}[htbp]
+      \centering
+      \includesvg[width=0.84\linewidth]{#1}
+      \caption{#2}
+      \label{#3}
+    \end{figure}
+  }{}%
+}
+
+\newcommand{\reportsource}[1]{\par\vspace{0.25em}{\footnotesize\color{ReportSlate}\textit{Source:} #1\par}}
+\newcommand{\na}{\textemdash}

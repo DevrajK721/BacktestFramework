@@ -1,0 +1,243 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{preamble}
+
+\begin{document}
+
+\reporttitle{Multi-Asset Time-Series Momentum}{Risk-aware portfolio construction using liquid ETF proxies}
+
+\keyfinding{This report documents a pre-specified research process. Results are reported only after data validation, validation-period model selection, and a single untouched out-of-sample evaluation.}
+
+\section*{Executive summary}
+\addcontentsline{toc}{section}{Executive summary}
+\begin{table}[htbp]
+\centering
+\caption{Research brief and current status}
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{0.23\linewidth}X@{}}
+\toprule
+\rowcolor{ReportMist}
+\textbf{Item} & \textbf{Specification} \\
+\midrule
+Research question & Do medium-term price trends across liquid asset classes support a diversified, implementable systematic portfolio after transaction costs? \\
+Method & Daily time-series-momentum signals across ten ETF proxies, tested first with equal absolute weights and then with inverse-volatility sizing. \\
+Current status & Data acquisition, integrity checks, and equal-weight validation are complete. No robust lookback was selected after the cost-sensitivity check; inverse-volatility, rebalancing robustness, and test-period evaluation have not been run. \\
+Decision standard & Evidence must remain credible across predefined parameter, cost, and rebalancing robustness checks; a high in-sample Sharpe ratio alone is not sufficient. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Research question and hypotheses}
+\subsection{Primary question}
+Do medium-term price trends contain enough persistent information across liquid asset classes to construct a diversified systematic portfolio with superior risk-adjusted characteristics relative to reasonable passive benchmarks?
+
+\subsection{Hypotheses}
+\textbf{$H_0$.} Past medium-term returns contain no economically useful information sufficient to produce a robust portfolio after realistic implementation assumptions.
+
+\textbf{$H_1$.} Positive medium-term trends tend to persist and negative medium-term trends tend to continue sufficiently to support a diversified systematic trend-following portfolio.
+
+\textbf{Secondary hypothesis.} Volatility-aware sizing improves the risk-adjusted characteristics and robustness of the raw momentum strategy.
+
+\section{Data}
+\subsection{Universe and source}
+The analysis uses adjusted daily ETF prices obtained from Yahoo Finance via \texttt{yfinance}. The frozen universe covers equities, government rates, credit, real assets, and currency exposure. The aligned sample contains 4,780 common trading dates from 2 July 2007 through 1 July 2026.
+
+\begin{table}[htbp]
+\centering
+\caption{Frozen research universe}
+\label{tab:universe}
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{Ticker} & \textbf{Risk source} & \textbf{Role in the universe} \\
+\midrule
+SPY & US equities & Broad US large-cap equity beta \\
+EFA & Developed ex-US equities & International developed-market equity exposure \\
+EEM & Emerging equities & Higher-volatility emerging-market equity risk \\
+IEF & Intermediate Treasuries & Moderate-duration US government-bond exposure \\
+TLT & Long Treasuries & Long-duration US government-bond exposure \\
+LQD & Investment-grade credit & Corporate credit-spread risk \\
+GLD & Gold & Precious-metal and real-rate-sensitive exposure \\
+DBC & Broad commodities & Diversified commodity-futures exposure \\
+UUP & US dollar & Long USD currency exposure \\
+VNQ & US real estate & Listed US real-estate exposure \\
+\bottomrule
+\end{tabularx}
+\reportsource{Yahoo Finance, retrieved 10 August 2026.}
+\end{table}
+
+\subsection{Data policy and limitations}
+Prices are adjusted for splits and distributions. The analysis retains only dates common to all ten instruments; missing values are not forward-filled. The use of ETF proxies, Yahoo Finance data, and a strict shared-history sample are material limitations and remain explicit throughout the report.
+
+\reportfigure{figures/correlation_matrix_heatmap.svg}{Daily-return correlation matrix of the frozen ETF universe.}{fig:data-correlation}
+\reportfigure{figures/volatility_bar_chart.svg}{Annualised volatility of daily returns by asset.}{fig:data-volatility}
+\reportfigure{figures/drawdown_line_chart.svg}{Buy-and-hold drawdowns by asset.}{fig:data-drawdowns}
+\FloatBarrier
+
+\section{Signal definition}
+For asset $i$ at date $t$ and lookback $L$, momentum is defined as
+\[
+M_{i,t,L}=\frac{P_{i,t}}{P_{i,t-L}}-1.
+\]
+The signed signal is
+\[
+s_{i,t}=
+\begin{cases}
+  +1 & \text{if } M_{i,t,L}>0,\\
+  0 & \text{if } M_{i,t,L}=0 \text{ or history is insufficient},\\
+  -1 & \text{if } M_{i,t,L}<0.
+\end{cases}
+\]
+The baseline uses $L=252$ trading days. Candidate lookbacks are selected only using the validation protocol described below. Targets formed with close data at $t$ are applied by the backtesting engine to the return ending at $t+1$.
+
+\section{Portfolio construction and implementation}
+\subsection{Equal-weight momentum baseline}
+The baseline target weight is $w_{i,t}=s_{i,t}/10$, rebalanced monthly at 100\% gross exposure. Net exposure is signal-dependent and is not constrained to zero.
+
+\subsection{Inverse-volatility comparison}
+For a trailing volatility window $W$,
+\[
+\hat{\sigma}_{i,t}=\operatorname{std}(r_{i,t-W+1:t})\sqrt{252}, \qquad
+w_{i,t}\propto\frac{s_{i,t}}{\hat{\sigma}_{i,t}}.
+\]
+Weights are normalised to 100\% gross exposure, subject to a 35\% individual absolute-weight cap. No portfolio-level volatility target or leverage is used in the initial study.
+
+\subsection{Costs and benchmarks}
+Transaction costs are modelled as one-way proportional costs per unit of turnover. The baseline is 5 bp per asset, with sensitivity at 0, 1, 2, 3, 5, 10, and 20 bp. Benchmarks are the equal-weight long-only universe, SPY buy-and-hold, and individual buy-and-hold asset results.
+
+\section{Research design}
+\begin{table}[htbp]
+\centering
+\caption{Temporal separation and decision protocol}
+\label{tab:splits}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Period} & \textbf{Dates} & \textbf{Purpose} \\
+\midrule
+Train & 2008-07-01 to 2015-06-30 & Infrastructure, diagnostics, and development \\
+Validation & 2015-07-01 to 2019-06-30 & Predefined model comparison and selection \\
+Test & 2019-07-01 to 2026-07-01 & Untouched out-of-sample evaluation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The validation procedure is staged. First, predefined momentum lookbacks are compared under equal-weight monthly construction. Second, the selected lookback is held fixed while equal-weight and inverse-volatility variants are compared. Rebalance frequency is a robustness analysis rather than a parameter chosen solely by maximum Sharpe ratio. No model decision is revised in response to test-period performance.
+
+\section{Development-period results}
+\keyfinding{The results below are implementation and development diagnostics only. They do not select a model, alter the frozen design, or constitute an out-of-sample claim.}
+
+\subsection{Baseline and passive benchmark comparison}
+Table~\ref{tab:train-comparison} compares the fixed 252-day, monthly-rebalanced equal-weight momentum baseline with passive alternatives over the development period. All portfolios start with \pounds100,000 and use the same mark-to-market ending convention. The buy-and-hold benchmarks incur only their initial 5 bp entry cost; the momentum strategy also incurs costs when its monthly target weights change.
+
+\begin{table}[htbp]
+\centering
+\caption{Development-period performance comparison, 1 July 2008 to 30 June 2015}
+\label{tab:train-comparison}
+\small
+\begin{tabular}{@{}lrrrrrrr@{}}
+\toprule
+\rowcolor{ReportMist}
+\textbf{Portfolio} & \textbf{Total} & \textbf{CAGR} & \textbf{Ann. vol.} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Turnover} & \textbf{Cost} \\
+\midrule
+TSM baseline & -2.2\% & -0.3\% & 13.0\% & 0.04 & -29.1\% & 20.6 & 1.03\% \\
+Equal-weight long-only & 31.0\% & 3.9\% & 10.0\% & 0.44 & -24.4\% & 1.0 & 0.05\% \\
+SPY buy-and-hold & 85.7\% & 9.3\% & 22.5\% & 0.51 & -47.2\% & 1.0 & 0.05\% \\
+\bottomrule
+\end{tabular}
+\reportsource{Author calculations from adjusted daily ETF prices. Sharpe ratios use a 0\% risk-free rate.}
+\end{table}
+
+The baseline did not match either passive benchmark on return over this development 
+period. Its maximum drawdown was lower than that of SPY, but higher than that 
+of the diversified long-only portfolio. This is a descriptive diagnostic rather 
+than a decision rule: no parameter or construction change follows from this 
+comparison. With this in mind, the results here are not providing any 
+evidence toward a possible benefit of the momentum strategy. In fact both the equal-weight
+and SPY buy-and-hold benchmark enormously outperformed the baseline, with the baseline
+being the only portfolio to lose money over the development period. While these 
+results do not look promising, they are not sufficient to reject the primary hypothesis. 
+It is also worth noting that none of the portfolios were able to avoid a massive drawdown 
+but also not able to have a Sharpe ratio above 1.0 which is a common threshold for a 
+robust strategy. Thus, no out-of-sample
+claims can be made from these results and the next stage is to explore the validation
+period to select a robust configuration across many tunable parameters. 
+
+\reportfigurecompact{figures/train_equity_curves.svg}{Development-period net equity curves. The comparison is descriptive and precedes validation-period model selection.}{fig:train-equity}
+\FloatBarrier
+
+\section{Validation-period lookback comparison}
+\keyfinding{This is the first stage of model selection: equal absolute weights, monthly rebalancing, and the pre-specified 5 bp cost are held fixed while only the momentum lookback varies. The test period remains untouched.}
+
+\subsection{Pre-specified lookback family}
+Table~\ref{tab:validation-lookbacks} reports the six lookbacks fixed before validation. All rows use the same 1 July 2015 to 28 June 2019 realised trading-date sample; 28 June is the final common trading date within the stated validation boundary. Cumulative cost is shown as a percentage of initial capital.
+
+\begin{table}[htbp]
+\centering
+\caption{Validation-period monthly equal-weight momentum comparison}
+\label{tab:validation-lookbacks}
+\small
+\begin{tabular}{@{}rrrrrrrr@{}}
+\toprule
+\rowcolor{ReportMist}
+\textbf{Lookback} & \textbf{Total} & \textbf{CAGR} & \textbf{Ann. vol.} & \textbf{Sharpe} & \textbf{Max DD} & \textbf{Turnover} & \textbf{Cost} \\
+\midrule
+7 days & 6.8\% & 1.7\% & 5.0\% & 0.35 & -5.7\% & 44.4 & 2.22\% \\
+21 days & -0.6\% & -0.2\% & 5.3\% & -0.00 & -12.5\% & 45.6 & 2.28\% \\
+63 days & -9.7\% & -2.5\% & 5.8\% & -0.41 & -11.9\% & 25.2 & 1.26\% \\
+126 days & -5.1\% & -1.3\% & 5.6\% & -0.21 & -13.6\% & 16.2 & 0.81\% \\
+189 days & -2.0\% & -0.5\% & 5.5\% & -0.07 & -10.3\% & 14.8 & 0.74\% \\
+252 days & -6.3\% & -1.6\% & 5.5\% & -0.27 & -17.2\% & 13.2 & 0.66\% \\
+\bottomrule
+\end{tabular}
+\reportsource{Author calculations from adjusted daily ETF prices. Sharpe ratios use a 0\% risk-free rate.}
+\end{table}
+
+The 7-day lookback is the only positive configuration, but it is isolated from the rest of the lookback family and has substantially higher turnover and costs. The table therefore does not, by itself, support selecting 7 days solely for its validation Sharpe ratio. A selection decision remains pending the pre-specified cost-sensitivity and stability assessment; it is acceptable for that assessment to conclude that no robust lookback is supported.
+
+\reportfigurecompact{figures/validation_lookback_equity_curves.svg}{Validation-period net equity curves for the pre-specified monthly equal-weight signal windows.}{fig:validation-lookback-equity}
+\FloatBarrier
+
+\section{Validation-period cost sensitivity}
+\keyfinding{The pre-specified cost analysis does not support selecting the monthly equal-weight model. The highest Sharpe ratio is 0.46 at zero cost for the isolated 7-day lookback, falling to 0.35 at the 5 bp baseline and 0.02 at 20 bp. No configuration reaches a Sharpe ratio of 0.5 under any cost assumption.}
+
+\subsection{Pre-specified implementation-cost scenarios}
+Table~\ref{tab:validation-cost-sensitivity} varies only the one-way transaction-cost assumption. For each lookback, the monthly target weights and therefore turnover are unchanged across rows; the table is an implementation robustness check rather than an additional parameter search.
+
+\begin{table}[htbp]
+\centering
+\caption{Validation Sharpe ratio by one-way transaction-cost assumption}
+\label{tab:validation-cost-sensitivity}
+\small
+\begin{tabular}{@{}rrrrrrrr@{}}
+\toprule
+\rowcolor{ReportMist}
+\textbf{Lookback} & \textbf{0 bp} & \textbf{1 bp} & \textbf{2 bp} & \textbf{3 bp} & \textbf{5 bp} & \textbf{10 bp} & \textbf{20 bp} \\
+\midrule
+7 days & 0.46 & 0.44 & 0.42 & 0.40 & 0.35 & 0.24 & 0.02 \\
+21 days & 0.11 & 0.08 & 0.06 & 0.04 & -0.00 & -0.11 & -0.32 \\
+63 days & -0.36 & -0.37 & -0.38 & -0.39 & -0.41 & -0.46 & -0.57 \\
+126 days & -0.17 & -0.18 & -0.19 & -0.19 & -0.21 & -0.24 & -0.32 \\
+189 days & -0.03 & -0.04 & -0.05 & -0.05 & -0.07 & -0.10 & -0.17 \\
+252 days & -0.24 & -0.24 & -0.25 & -0.25 & -0.27 & -0.30 & -0.36 \\
+\bottomrule
+\end{tabular}
+\reportsource{Author calculations from adjusted daily ETF prices. Sharpe ratios use a 0\% risk-free rate.}
+\end{table}
+
+The 7-day configuration remains the best row throughout the grid, but it is not supported by a broad or high-quality region of lookback performance. Even before costs its Sharpe ratio remains below 0.5, while its higher turnover makes the result increasingly fragile as trading costs rise. The other five lookbacks provide no corroborating evidence. Accordingly, no equal-weight configuration is selected, the inverse-volatility and rebalance-frequency stages are not run, and the test period remains untouched.
+
+\reportfigurecompact{figures/validation_cost_sensitivity_sharpe.svg}{Validation Sharpe-ratio sensitivity to the pre-specified one-way transaction-cost grid. The dashed line is a 0.5 reference, not a fitted decision boundary.}{fig:validation-cost-sensitivity}
+\FloatBarrier
+
+\section{Interpretation, limitations, and conclusion}
+\subsection{Current interpretation}
+The development-period baseline is functioning as specified, but neither the development results nor the equal-weight validation results establish economic value. The pre-specified lookback and cost-sensitivity analysis does not support freezing a robust equal-weight configuration. In accordance with the staged protocol, inverse-volatility construction and rebalancing robustness are not used to search for a rescue result, and the test period remains untouched. This is a negative validation finding for the specified equal-weight time-series-momentum family, not a claim that momentum cannot work under any other universe, implementation, or research design.
+
+\subsection{Final conclusion}
+\keyfinding{This research project is complete. No further tests are justified within the frozen design because validation did not identify a robust candidate; the test period remains intentionally unused.}
+
+For the specified universe, signal family, equal-weight construction, monthly rebalancing, and transaction-cost assumptions, the primary hypothesis is not supported. The 7-day lookback was the best validation result, but it was isolated from the remainder of the lookback family, achieved a Sharpe ratio of only 0.46 even at zero transaction cost, and fell to 0.35 under the 5 bp baseline. No configuration reached a Sharpe ratio of 0.5 under any pre-specified cost scenario.
+
+The study therefore fails to reject the null hypothesis that this implementation does not provide sufficiently robust economic value after realistic implementation assumptions. No equal-weight configuration is frozen for inverse-volatility sizing, rebalancing robustness, or test-period evaluation. Continuing to vary portfolio construction, timing, or parameters after this validation result would be a post-hoc search rather than a valid continuation of the pre-specified study.
+
+
+% Add a references section once external sources are cited in the report.
+
+\end{document}
